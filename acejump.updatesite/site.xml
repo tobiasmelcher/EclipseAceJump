@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <feature url="features/acejump.feature_1.0.0.201501171553.jar" id="acejump.feature" version="1.0.0.201501171553">
+   <feature url="features/acejump.feature_1.0.0.201501181503.jar" id="acejump.feature" version="1.0.0.201501181503">
       <category name="ace.jump.category"/>
    </feature>
    <category-def name="ace.jump.category" label="AceJump for Eclipse"/>

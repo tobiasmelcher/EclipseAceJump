@@ -102,33 +102,16 @@ public class AceCommandHandler extends AbstractHandler {
 							if (drawNow) {
 								// check if user adds another character
 								// TODO: implement search mode
-								Display.getDefault().timerExec(500, new Runnable() {
+								// if more than two characters typed in, then
+								// switch to search mode
+								if (text.getText().length() == 2) {
+									drawNow = false;
+									shell.close();
+									// jump to cursor
+									selectOrJumpNow(ch, st, te);
+									st.redraw();
 
-									@Override
-									public void run() {
-										if (text.isDisposed())
-											return;
-										if (text.getText().length() == 2) { // if
-																			// more
-																			// than
-																			// two
-																			// characters
-																			// typed
-																			// in,
-																			// then
-																			// switch
-																			// to
-																			// search
-																			// mode
-											drawNow = false;
-											shell.close();
-											// jump to cursor
-											selectOrJumpNow(ch, st, te);
-											st.redraw();
-										}
-									}
-								});
-								return;
+								}
 							} else {
 								currentChar = ch;
 								drawNow = true;
@@ -232,6 +215,8 @@ public class AceCommandHandler extends AbstractHandler {
 				char c = src.charAt(i);
 				if (c == match) {
 					if (i == 0)
+						return true;
+					if (Character.isLetter(c) == false)
 						return true;
 					char prev = src.charAt(i - 1);
 					if (Character.isLetter(prev))
