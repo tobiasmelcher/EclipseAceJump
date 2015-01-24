@@ -11,4 +11,5 @@ Install the plugin via "Help -> Install New Software" and add update site:
 http://tobiasmelcher.github.io/acejumpeclipse/
 ````
 Default keyboard shortcut for AceJump is Ctrl-,
+
 Change this in Window->Preferences->Keys->aceJump
