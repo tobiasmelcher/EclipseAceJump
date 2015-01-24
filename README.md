@@ -3,6 +3,8 @@ Eclipse Ace Jump Plugin
 
 Bring the AceJump functionality known from Emacs to Eclipse. Jump vey fast via keyboard shortcut to the beginning of a word.
 
+!![560x315](//youtu.be/5gx7GGMuKp4)
+
 Install the plugin via "Help -> Install New Software" and add update site:
 
 ````
