@@ -1,10 +1,12 @@
 package ace.jump;
 
-import java.awt.*;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
-
+    
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -32,49 +34,49 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import acejump.Activator;
 
 public class AceCommandHandler extends AbstractHandler {
-	private boolean drawNow = false;
-	private char jumpTargetChar;
+    private boolean drawNow = false;
+    private char jumpTargetChar;
     private MarkerCollection _markerCollection = new MarkerCollection();
 
     public static final char INFINITE_JUMP_CHAR = '/';
     private static final String MARKER_CHARSET = "asdfjeghiybcmnopqrtuvwkl";
 
-	@Override
-	public Object execute(ExecutionEvent event) throws ExecutionException {
-		final ITextEditor te;
-		final ISourceViewer sv;
-		final StyledText st;
+    @Override
+    public Object execute(ExecutionEvent event) throws ExecutionException {
+        final ITextEditor te;
+        final ISourceViewer sv;
+        final StyledText st;
 
-		if (    null == (te = getActiveTextEditor())
-		     || null == (te.getSelectionProvider().getSelection())
-		     || null == (sv = getSourceViewer(te))
-	         || null == (st = getStyledTextFromTextEditor(te))) {
-			return null;
-		}
+        if (    null == (te = getActiveTextEditor())
+             || null == (te.getSelectionProvider().getSelection())
+             || null == (sv = getSourceViewer(te))
+             || null == (st = getStyledTextFromTextEditor(te))) {
+            return null;
+        }
 
         _markerCollection.clear();
 
-		add_paint_listener__to__draw_jump_target_markers(st, sv);
+        add_paint_listener__to__draw_jump_target_markers(st, sv);
 
-		final Shell shell = new Shell(Display.getDefault(), SWT.MODELESS);
+        final Shell shell = new Shell(Display.getDefault(), SWT.MODELESS);
         shell.setBounds(1, 1, 1, 1);
 
-		new org.eclipse.swt.widgets.Canvas(shell, SWT.ALPHA).addKeyListener(new KeyListener() {
-		    @Override public void keyReleased(KeyEvent e) {}
-		    @Override public void keyPressed(KeyEvent e) {
-		    	if (Character.isISOControl(e.character)) {
-		    		return;
-		    	}
+        new org.eclipse.swt.widgets.Canvas(shell, SWT.ALPHA).addKeyListener(new KeyListener() {
+            @Override public void keyReleased(KeyEvent e) {}
+            @Override public void keyPressed(KeyEvent e) {
+                if (Character.isISOControl(e.character)) {
+                    return;
+                }
 
-		        if (drawNow) {
-		        	if (e.character >= 'a' && e.character <= 'z') {
-						boolean jumpFinished = selectOrJumpNow(e.character, st, sv);
+                if (drawNow) {
+                    if (e.character >= 'a' && e.character <= 'z') {
+                        boolean jumpFinished = selectOrJumpNow(e.character, st, sv);
                         if (jumpFinished) {
                             drawNow = false;
                             shell.close();
                         }
-		        	}
-				} else {
+                    }
+                } else {
                     drawNow = e.keyCode != 27;
                     jumpTargetChar = e.character;
                     if (e.keyCode == 27) {
@@ -83,13 +85,13 @@ public class AceCommandHandler extends AbstractHandler {
                 }
                 st.redraw();
             }
-		});
+        });
 
-		shell.open();
-		return null;
-	}
+        shell.open();
+        return null;
+    }
 
-	protected boolean selectOrJumpNow(char ch, StyledText st, ISourceViewer sv) {
+    protected boolean selectOrJumpNow(char ch, StyledText st, ISourceViewer sv) {
         ArrayList<Integer> offsets = _markerCollection.getOffsetsOfKey(ch);
 
         if (!offsets.isEmpty()) {
@@ -105,7 +107,7 @@ public class AceCommandHandler extends AbstractHandler {
         }
 
         return true;
-	}
+    }
 
 
     void sort_offsets_by_distance_to_caret(List<Integer> offsets, final StyledText st, final ISourceViewer sv) {
@@ -122,22 +124,22 @@ public class AceCommandHandler extends AbstractHandler {
 
 
     private void add_paint_listener__to__draw_jump_target_markers(final StyledText st, final ISourceViewer sv) {
-		if (alreadyHasPaintListenerFor(st))
-			return;
+        if (alreadyHasPaintListenerFor(st))
+            return;
 
-		PaintListener pl = new PaintListener() {
-			@Override
-			public void paintControl(PaintEvent e) {
+        PaintListener pl = new PaintListener() {
+            @Override
+            public void paintControl(PaintEvent e) {
                 if (_markerCollection.isEmpty()) {
                     List<Integer> offsets = get_offsets_of_char(st, sv);
                     sort_offsets_by_distance_to_caret(offsets, st, sv);
                     assign_marker_to(offsets);
                 }
 
-				if (drawNow) {
+                if (drawNow) {
                     draw_jump_target_markers(e.gc, st, sv);
                 }
-			}
+            }
 
             private void draw_jump_target_markers(GC gc, final StyledText st, final ISourceViewer sv) {
                 HashSet<Integer> firstJumpOffsets = new HashSet<Integer>();
@@ -174,8 +176,8 @@ public class AceCommandHandler extends AbstractHandler {
                 List<Integer> offsets = new ArrayList<Integer>();
 
                 int start = ((ITextViewerExtension5) sv).modelOffset2WidgetOffset(sv.getTopIndexStartOffset());
-				int end = ((ITextViewerExtension5) sv).modelOffset2WidgetOffset(sv.getBottomIndexEndOffset());
-				String src = st.getText(start, end);
+                int end = ((ITextViewerExtension5) sv).modelOffset2WidgetOffset(sv.getBottomIndexEndOffset());
+                String src = st.getText(start, end);
 
                 int caretOffset =  ((ITextViewerExtension5) sv).modelOffset2WidgetOffset(st.getCaretOffset());
 
@@ -192,15 +194,15 @@ public class AceCommandHandler extends AbstractHandler {
                 return offsets;
             }
 
-			private boolean is_jump_candidate(String src, int i) {
-				char c = src.charAt(i);
+            private boolean is_jump_candidate(String src, int i) {
+                char c = src.charAt(i);
 
                 boolean spaceMatchedTheNewlineChar = c == '\n' && jumpTargetChar == ' ';
                 if (spaceMatchedTheNewlineChar) {
                     return true;
                 }
 
-				if (Character.toLowerCase(c) == Character.toLowerCase(jumpTargetChar)) {
+                if (Character.toLowerCase(c) == Character.toLowerCase(jumpTargetChar)) {
                     if (i > 0) {
                         char prev = src.charAt(i - 1);
                         boolean isAtWordBoundary = !Character.isLetter(prev);
@@ -208,27 +210,27 @@ public class AceCommandHandler extends AbstractHandler {
                         return isAtWordBoundary || isAtCamelCaseBoundary;
                     }
                     return true;
-				}
-				return false;
-			}
+                }
+                return false;
+            }
 
             private void drawMarkerAt(int offset, GC gc, StyledText st, char marker, int foregroundColor) {
-				String word = Character.toString(marker);
+                String word = Character.toString(marker);
 
-				Rectangle bounds = st.getTextBounds(offset, offset);
-				gc.setBackground(Display.getDefault().getSystemColor(SWT.COLOR_WHITE));
-				Point textExtent = gc.textExtent(word);
+                Rectangle bounds = st.getTextBounds(offset, offset);
+                gc.setBackground(Display.getDefault().getSystemColor(SWT.COLOR_WHITE));
+                Point textExtent = gc.textExtent(word);
 
-				int ex = 0;
-				int dex = 2 * ex;
-				gc.fillRoundRectangle(bounds.x - ex, bounds.y - ex, textExtent.x + dex, textExtent.y + dex, 0, 0);
+                int ex = 0;
+                int dex = 2 * ex;
+                gc.fillRoundRectangle(bounds.x - ex, bounds.y - ex, textExtent.x + dex, textExtent.y + dex, 0, 0);
 
-				gc.setForeground(Display.getDefault().getSystemColor(foregroundColor));
-				gc.drawString(word, bounds.x, bounds.y, true);
-			}
-		};
-		st.addPaintListener(pl);
-	}
+                gc.setForeground(Display.getDefault().getSystemColor(foregroundColor));
+                gc.drawString(word, bounds.x, bounds.y, true);
+            }
+        };
+        st.addPaintListener(pl);
+    }
 
     ////////////////////////////////////////////////////////////////////////////
     private void assign_marker_to(List<Integer> offsets) {
@@ -289,42 +291,42 @@ public class AceCommandHandler extends AbstractHandler {
     }
 
     ////////////////////////////////////////////////////////////////////////////
-	private List<StyledText> listeners = new ArrayList<StyledText>();
+    private List<StyledText> listeners = new ArrayList<StyledText>();
 
-	private boolean alreadyHasPaintListenerFor(final StyledText st) {
-		if (listeners.contains(st))
-			return true;
+    private boolean alreadyHasPaintListenerFor(final StyledText st) {
+        if (listeners.contains(st))
+            return true;
 
-		listeners.add(st);
-		st.addDisposeListener(new DisposeListener() {
-			@Override
-			public void widgetDisposed(DisposeEvent e) {
-				listeners.remove(st);
-			}
-		});
+        listeners.add(st);
+        st.addDisposeListener(new DisposeListener() {
+            @Override
+            public void widgetDisposed(DisposeEvent e) {
+                listeners.remove(st);
+            }
+        });
 
-		return false;
-	}
+        return false;
+    }
 
     ////////////////////////////////////////////////////////////////////////////
-	private ITextEditor getActiveTextEditor() {
-		IEditorPart ae = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+    private ITextEditor getActiveTextEditor() {
+        IEditorPart ae = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
         return ae instanceof ITextEditor ?  (ITextEditor) ae : null;
-	}
+    }
 
-	private ISourceViewer getSourceViewer(ITextEditor te) {
-		try {
-			Method m = AbstractTextEditor.class.getDeclaredMethod("getSourceViewer");
-			m.setAccessible(true);
-			return (ISourceViewer) m.invoke(te);
-		} catch (Exception e1) {
-			Activator.log(e1);
-			return null;
-		}
-	}
+    private ISourceViewer getSourceViewer(ITextEditor te) {
+        try {
+            Method m = AbstractTextEditor.class.getDeclaredMethod("getSourceViewer");
+            m.setAccessible(true);
+            return (ISourceViewer) m.invoke(te);
+        } catch (Exception e1) {
+            Activator.log(e1);
+            return null;
+        }
+    }
 
-	private StyledText getStyledTextFromTextEditor(ITextEditor te) {
-		Control c = te.getAdapter(Control.class);
-		return c instanceof StyledText ? (StyledText) c : null;
-	}
+    private StyledText getStyledTextFromTextEditor(ITextEditor te) {
+        Control c = te.getAdapter(Control.class);
+        return c instanceof StyledText ? (StyledText) c : null;
+    }
 }
