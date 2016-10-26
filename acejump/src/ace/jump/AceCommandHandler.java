@@ -38,6 +38,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.eclipse.ui.texteditor.ITextEditor;
 
@@ -53,6 +54,13 @@ public class AceCommandHandler extends AbstractHandler {
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		IEditorPart ae = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+		if (ae instanceof MultiPageEditorPart) {
+			MultiPageEditorPart mpe = (MultiPageEditorPart) ae;
+			Object page = mpe.getSelectedPage();
+			if (page instanceof IEditorPart) {
+				ae = (IEditorPart) page;
+			}
+		}
 		if (ae instanceof ITextEditor) {
 			final ITextEditor te = (ITextEditor) ae;
 			ISelection sel = te.getSelectionProvider().getSelection();
