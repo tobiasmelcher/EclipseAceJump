@@ -2,6 +2,7 @@ package ace.jump;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -49,7 +50,7 @@ public abstract class AbstractAceCommandHandler extends AbstractHandler {
 	private boolean drawNow = false;
 	private char currentChar;
 	private List<StyledText> listeners = new ArrayList<StyledText>();
-	private Map<Character, Integer> offsetForCharacter = new HashMap<Character, Integer>();
+	private Map<String, Integer> offsetForCharacter = new HashMap<String, Integer>();
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -106,22 +107,20 @@ public abstract class AbstractAceCommandHandler extends AbstractHandler {
 								drawNow = false;
 								return;
 							}
-							final char ch = txt.charAt(txt.length() - 1);
 							if (drawNow) {
 								// check if user adds another character
-								// TODO: implement search mode
-								// if more than two characters typed in, then
-								// switch to search mode
-								if (text.getText().length() == 2) {
-									drawNow = false;
-									shell.close();
+								if (txt.length() > 1) {
 									// jump to cursor
-									selectOrJumpNow(ch, st, te);
-									st.redraw();
-
+									final String ch = txt.substring(1);
+									if (selectOrJumpNow(ch, st, te)) {
+										drawNow = false;
+										shell.close();
+										st.redraw();
+									}
+									return;
 								}
 							} else {
-								currentChar = ch;
+								currentChar = txt.charAt(0);
 								drawNow = true;
 							}
 							st.redraw();
@@ -154,18 +153,13 @@ public abstract class AbstractAceCommandHandler extends AbstractHandler {
 		return null;
 	}
 
-	protected void selectOrJumpNow(char ch, StyledText st, ITextEditor te) {
+	protected boolean selectOrJumpNow(String ch, StyledText st, ITextEditor te) {
 		Integer off = offsetForCharacter.get(ch);
 		if (off != null) {
-			// select
 			st.setSelection(off);
-			// TODO: distinguish between jump and select
-			/*
-			 * if (Character.isUpperCase(ch)) { // select int start =
-			 * st.getCaretOffset(); st.setSelection(start, off); } else { //
-			 * jump to offset st.setSelection(off); }
-			 */
+			return true;
 		}
+		return false;
 	}
 	protected abstract boolean isMatch(String src, int i, char match);
 	
@@ -177,8 +171,10 @@ public abstract class AbstractAceCommandHandler extends AbstractHandler {
 		final Color black = display.getSystemColor(SWT.COLOR_BLACK);
 		final Color white = display.getSystemColor(SWT.COLOR_WHITE);
 		PaintListener pl = new PaintListener() {
-			char letterCounter;
-
+			char letterCounter=0;
+			List<String> prefixes=Arrays.asList("",",",".","-");
+			int prefixIndex=0;
+			
 			@Override
 			public void paintControl(PaintEvent e) {
 				if (drawNow == false)
@@ -202,6 +198,7 @@ public abstract class AbstractAceCommandHandler extends AbstractHandler {
 				int len = st.getCharCount();
 				char current = Character.toLowerCase(currentChar);
 				letterCounter = 'A';
+				prefixIndex=0;
 				while (true) {
 					if (isMatch(src, i, current)) {
 						int off = start + i;
@@ -210,7 +207,11 @@ public abstract class AbstractAceCommandHandler extends AbstractHandler {
 						}
 						drawNextCharAt(off, gc, st);
 						if (letterCounter - 1 == 'Z') {
-							break;
+							prefixIndex++;
+							letterCounter='A';
+							if (prefixIndex>=prefixes.size()) {
+								break;	
+							}
 						}
 					}
 					i--;
@@ -233,6 +234,7 @@ public abstract class AbstractAceCommandHandler extends AbstractHandler {
 				int i = 0;
 				int len = st.getCharCount();
 				letterCounter = 'a';
+				prefixIndex = 0;
 				char current = Character.toLowerCase(currentChar);
 				while (true) {
 					if (isMatch(src, i, current)) {
@@ -242,7 +244,11 @@ public abstract class AbstractAceCommandHandler extends AbstractHandler {
 						}
 						drawNextCharAt(off, gc, st);
 						if (letterCounter - 1 == 'z') {
-							break;
+							prefixIndex++;
+							letterCounter='a';
+							if (prefixIndex>=prefixes.size()) {
+								break;	
+							}
 						}
 					}
 					i++;
@@ -252,8 +258,8 @@ public abstract class AbstractAceCommandHandler extends AbstractHandler {
 			}
 
 			private void drawNextCharAt(int offset, GC gc, StyledText st) {
-				String word = Character.toString(letterCounter);
-				offsetForCharacter.put(letterCounter, offset);
+				String word = prefixes.get(prefixIndex) + Character.toString(letterCounter);
+				offsetForCharacter.put(word, offset);
 				letterCounter++;
 
 				Rectangle bounds = st.getTextBounds(offset, offset);
