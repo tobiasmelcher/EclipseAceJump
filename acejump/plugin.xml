@@ -9,6 +9,12 @@
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+,">
       </key>
+      <key
+            commandId="ace.jump.CommandAnyChar"
+            contextId="org.eclipse.ui.textEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+;">
+      </key>
    </extension>
    <extension
          point="org.eclipse.ui.commands">

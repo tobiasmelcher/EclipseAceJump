@@ -10,10 +10,11 @@ Install the plugin via "Help -> Install New Software" and add update site:
 ````
 http://tobiasmelcher.github.io/acejumpeclipse/
 ````
-Default keyboard shortcut for AceJump is Ctrl-,
+Default keyboard shortcut for AceJump is Ctrl-, and AceJumpAnyChar is Ctrl-;
+
 
 Change shortcut in Window->Preferences->Keys->aceJump
 
 Two commands are provided:
 - ace.jump.Command: jumps to beginning of the word
-- ace.jump.CommandAnyChar: jumps to any character (has no default keyboard shortcut registered)
+- ace.jump.CommandAnyChar: jumps to any character

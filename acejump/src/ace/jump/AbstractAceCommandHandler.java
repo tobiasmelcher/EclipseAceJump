@@ -172,7 +172,7 @@ public abstract class AbstractAceCommandHandler extends AbstractHandler {
 		final Color white = display.getSystemColor(SWT.COLOR_WHITE);
 		PaintListener pl = new PaintListener() {
 			char letterCounter=0;
-			List<String> prefixes=Arrays.asList("",",",".","-");
+			List<String> prefixes=Arrays.asList("",";",",",".");
 			int prefixIndex=0;
 			
 			@Override
